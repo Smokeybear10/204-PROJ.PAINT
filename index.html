@@ -28,13 +28,13 @@
     font-family: 'Inter', -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     background-image:
-      radial-gradient(circle at 20% 10%, rgba(236, 104, 19, 0.04) 0%, transparent 40%),
-      radial-gradient(circle at 80% 60%, rgba(45, 110, 94, 0.03) 0%, transparent 40%),
-      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(26, 26, 26, 0.015) 2px, rgba(26, 26, 26, 0.015) 3px);
+      radial-gradient(circle at 20% 10%, rgba(236, 104, 19, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(45, 110, 94, 0.04) 0%, transparent 40%),
+      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(26, 26, 26, 0.018) 2px, rgba(26, 26, 26, 0.018) 3px);
   }
   .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
 
-  /* Masthead (from C) */
+  /* Masthead */
   .masthead {
     border-bottom: 2px solid var(--ink);
     padding: 1rem 2rem;
@@ -60,9 +60,35 @@
     font-size: 0.88rem;
   }
 
+  /* Paint drips */
+  @keyframes drip-in {
+    from { transform: scaleY(0); opacity: 0; }
+    to   { transform: scaleY(1); opacity: 1; }
+  }
+  .drip-bar {
+    position: relative;
+    height: 56px;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .drip {
+    position: absolute;
+    top: 0;
+    border-radius: 0 0 50% 50%;
+    transform-origin: top center;
+    animation: drip-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
   /* Hero */
-  .hero { padding: 5rem 0 4rem; text-align: center; position: relative; }
+  .hero { padding: 4rem 0 4rem; text-align: center; position: relative; overflow: visible; }
+  .hero-brushes { position: absolute; inset: 0; overflow: visible; pointer-events: none; }
+  .hero-brush { position: absolute; }
+  .hero-brush-1 { top: -8%; left: -10%; width: 60%; transform: rotate(-11deg); }
+  .hero-brush-2 { bottom: -2%; right: -8%; width: 52%; transform: rotate(7deg); }
+  .hero-brush-3 { top: 22%; right: 0%; width: 30%; transform: rotate(18deg); }
+  .hero-inner { position: relative; z-index: 1; }
+
   .hero-kicker {
     font-family: 'Caveat', cursive;
     font-size: 1.4rem;
@@ -131,6 +157,7 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     font-weight: 600;
+    z-index: 2;
   }
   .canvas-showcase iframe {
     display: block;
@@ -140,7 +167,6 @@
     border-radius: 2px;
     background: var(--paper);
   }
-  .canvas-showcase::after { z-index: 2; }
   .canvas-hint {
     font-family: 'Caveat', cursive;
     font-size: 1.15rem;
@@ -167,12 +193,36 @@
     border-radius: 20px;
     color: var(--ink);
     transform: rotate(var(--r));
-    box-shadow: 2px 2px 0 rgba(26, 26, 26, 0.1);
+    box-shadow: 2px 2px 0 rgba(26, 26, 26, 0.12);
     font-weight: 500;
   }
 
+  /* Palette banner (swatch divider) */
+  .palette-banner {
+    display: flex; flex-direction: column; align-items: center; gap: 0.65rem;
+    padding: 3rem 0 0;
+    pointer-events: none;
+  }
+  .pb-inner {
+    display: flex;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: rotate(-0.5deg);
+  }
+  .pb-swatch { width: 44px; height: 34px; }
+  .pb-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transform: rotate(0.3deg);
+  }
+
   /* Section heading */
-  .section { padding: 5rem 0; }
+  .section { padding: 4rem 0; }
   .section-label {
     font-family: 'Caveat', cursive;
     font-size: 1.8rem;
@@ -189,7 +239,7 @@
     letter-spacing: -0.02em;
   }
 
-  /* Demo cards with figure illustrations (from C) */
+  /* Demo cards */
   .demos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
   .demos.demos-3 { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
   .demo-card {
@@ -229,8 +279,9 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: hidden;
   }
-  .demo-art svg { width: 55%; height: 55%; }
+  .demo-art svg { width: 100%; height: 100%; }
   .fig-tag {
     position: absolute;
     bottom: 0.5rem;
@@ -239,6 +290,7 @@
     font-style: italic;
     font-size: 0.72rem;
     color: var(--ink-muted);
+    z-index: 1;
   }
 
   .demo-body { padding: 1.5rem 1.75rem 1.5rem; flex: 1; display: flex; flex-direction: column; }
@@ -267,19 +319,18 @@
   /* Splatters */
   .splat {
     position: absolute;
-    width: 40px;
-    height: 40px;
     background: var(--orange);
     border-radius: 50% 40% 60% 45% / 55% 45% 60% 50%;
-    opacity: 0.15;
     pointer-events: none;
   }
-  .splat.s1 { top: 10%; left: 5%; }
-  .splat.s2 { top: 40%; right: 8%; background: var(--teal); width: 30px; height: 30px; }
-  .splat.s3 { bottom: 20%; left: 10%; background: var(--red); width: 25px; height: 25px; }
+  .splat.s1 { top: 11%; left: 3%; width: 58px; height: 52px; opacity: 0.2; }
+  .splat.s2 { top: 37%; right: 4%; background: var(--teal); width: 46px; height: 40px; opacity: 0.16; border-radius: 60% 40% 55% 45% / 45% 55% 45% 60%; }
+  .splat.s3 { bottom: 24%; left: 6%; background: var(--red); width: 38px; height: 34px; opacity: 0.14; border-radius: 45% 55% 60% 40% / 55% 45% 50% 55%; }
+  .splat.s4 { top: 62%; right: 7%; background: #7851a9; width: 28px; height: 26px; opacity: 0.13; border-radius: 55% 45% 40% 60% / 60% 40% 55% 50%; }
 
   @media (max-width: 900px) {
     .demos.demos-3 { grid-template-columns: 1fr; gap: 2rem; }
+    .pb-swatch { width: 32px; }
   }
   @media (max-width: 780px) {
     .demos { grid-template-columns: 1fr; }
@@ -287,6 +338,7 @@
     .arch { padding: 3rem 1.75rem; }
     .masthead { padding: 0.85rem 1.25rem; flex-wrap: wrap; gap: 0.5rem; }
     .canvas-showcase iframe { height: 340px; }
+    .hero-brush-1, .hero-brush-2, .hero-brush-3 { opacity: 0.7; }
   }
 </style>
 </head>
@@ -297,29 +349,75 @@
   <span class="mast-issue">Issue № 01 · Spring 2026</span>
 </header>
 
+<!-- paint drips hanging from the masthead -->
+<div class="drip-bar" aria-hidden="true">
+  <div class="drip" style="left:6%;   background:#ec6813; width:9px;  height:46px; animation-delay:0.15s;"></div>
+  <div class="drip" style="left:17%;  background:#1a1a1a; width:6px;  height:26px; animation-delay:0.65s;"></div>
+  <div class="drip" style="left:36%;  background:#2d6e5e; width:10px; height:54px; animation-delay:0.05s;"></div>
+  <div class="drip" style="left:52%;  background:#7851a9; width:7px;  height:32px; animation-delay:0.95s;"></div>
+  <div class="drip" style="left:68%;  background:#ec6813; width:9px;  height:40px; animation-delay:0.45s;"></div>
+  <div class="drip" style="left:80%;  background:#d4a017; width:6px;  height:20px; animation-delay:1.15s;"></div>
+  <div class="drip" style="left:91%;  background:#c0392b; width:8px;  height:30px; animation-delay:0.75s;"></div>
+</div>
+
 <div class="splat s1"></div>
 <div class="splat s2"></div>
 <div class="splat s3"></div>
+<div class="splat s4"></div>
 
 <section id="home" class="hero container">
-  <div class="hero-kicker">ocaml in the browser · widgets, events, pixels</div>
-  <h1>OCaml GUI,<br><span class="painted-word">painted</span> to the web.</h1>
-  <p class="hero-sub">
-    A widget toolkit and drawing application written from scratch in OCaml, compiled to JavaScript with <code>js_of_ocaml</code>. Runs entirely in your browser — no server, no backend. Try it below.
-  </p>
-
-  <div class="canvas-showcase">
-    <iframe src="paint-embed.html" title="paint.ml live demo" loading="lazy"></iframe>
+  <!-- decorative brushstroke shapes behind hero content -->
+  <div class="hero-brushes" aria-hidden="true">
+    <svg class="hero-brush hero-brush-1" viewBox="0 0 500 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8,55 C40,15 130,4 240,11 C345,18 432,36 492,53 C484,80 396,90 288,79 C178,68 28,92 8,55Z" fill="#ec6813" opacity="0.13"/>
+    </svg>
+    <svg class="hero-brush hero-brush-2" viewBox="0 0 420 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6,50 C32,12 112,5 202,15 C288,25 365,42 415,56 C402,78 308,84 198,74 C88,64 5,77 6,50Z" fill="#2d6e5e" opacity="0.10"/>
+    </svg>
+    <svg class="hero-brush hero-brush-3" viewBox="0 0 280 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5,44 C22,10 82,3 148,14 C210,25 266,44 275,56 C263,72 198,76 126,65 C54,54 3,65 5,44Z" fill="#7851a9" opacity="0.10"/>
+    </svg>
   </div>
-  <p class="canvas-hint">click and drag to draw → press <code>u</code> to undo, <code>s</code> to save</p>
 
-  <div class="tech-row">
-    <span class="tag" style="--r: -2deg;">OCaml 4.13</span>
-    <span class="tag" style="--r: 1deg;">js_of_ocaml</span>
-    <span class="tag" style="--r: -1deg;">HTML5 Canvas</span>
-    <span class="tag" style="--r: 2deg;">~1.5k LOC</span>
+  <div class="hero-inner">
+    <div class="hero-kicker">ocaml in the browser · widgets, events, pixels</div>
+    <h1>OCaml GUI,<br><span class="painted-word">painted</span> to the web.</h1>
+    <p class="hero-sub">
+      A widget toolkit and drawing application written from scratch in OCaml, compiled to JavaScript with <code>js_of_ocaml</code>. Runs entirely in your browser — no server, no backend. Try it below.
+    </p>
+
+    <div class="canvas-showcase">
+      <iframe src="paint-embed.html" title="paint.ml live demo" loading="lazy"></iframe>
+    </div>
+    <p class="canvas-hint">click and drag to draw → press <code>u</code> to undo, <code>s</code> to save</p>
+
+    <div class="tech-row">
+      <span class="tag" style="--r: -2deg;">OCaml 4.13</span>
+      <span class="tag" style="--r: 1deg;">js_of_ocaml</span>
+      <span class="tag" style="--r: -1deg;">HTML5 Canvas</span>
+      <span class="tag" style="--r: 2deg;">~1.5k LOC</span>
+    </div>
   </div>
 </section>
+
+<!-- palette swatch strip — the 12 colors shared across all three demos -->
+<div class="palette-banner" aria-hidden="true">
+  <div class="pb-inner">
+    <div class="pb-swatch" style="background:#1a1a1a;"></div>
+    <div class="pb-swatch" style="background:#ec6813;"></div>
+    <div class="pb-swatch" style="background:#2d6e5e;"></div>
+    <div class="pb-swatch" style="background:#c0392b;"></div>
+    <div class="pb-swatch" style="background:#d4a017;"></div>
+    <div class="pb-swatch" style="background:#7851a9;"></div>
+    <div class="pb-swatch" style="background:#56a0d3;"></div>
+    <div class="pb-swatch" style="background:#d35e83;"></div>
+    <div class="pb-swatch" style="background:#387c44;"></div>
+    <div class="pb-swatch" style="background:#eb8964;"></div>
+    <div class="pb-swatch" style="background:#6c757d;"></div>
+    <div class="pb-swatch" style="background:#f5f0e6; border-left: 1px solid rgba(26,26,26,0.2);"></div>
+  </div>
+  <div class="pb-label">the palette · 12 colors · one runtime</div>
+</div>
 
 <section id="demos" class="section container">
   <div>
@@ -327,13 +425,24 @@
     <h2 class="section-title">Three demos, one runtime</h2>
   </div>
   <div class="demos demos-3">
+
     <a class="demo-card" style="--r: -0.8deg;" href="paint.html">
       <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round">
-          <path d="M10 45 Q 28 20, 45 35 T 90 15" stroke="#ec6813" stroke-width="2.5"/>
-          <circle cx="30" cy="24" r="2.5" fill="#c0392b"/>
-          <circle cx="68" cy="20" r="2.5" fill="#1a1a1a"/>
-          <path d="M15 48 L85 48" stroke-width="0.6" stroke-dasharray="2 2"/>
+        <svg viewBox="0 0 100 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="56" fill="#f2ede0"/>
+          <!-- thick orange brushstroke -->
+          <path d="M6,40 C18,26 40,18 64,27 C80,33 94,42 97,47" stroke="#ec6813" stroke-width="9" stroke-linecap="round" fill="none"/>
+          <!-- ink wavy line -->
+          <path d="M10,17 C22,9 40,21 55,13 C71,5 83,17 92,12" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.6"/>
+          <!-- paint dots on the bottom like palette dots -->
+          <circle cx="18" cy="50" r="3.5" fill="#c0392b"/>
+          <circle cx="28" cy="50" r="3.5" fill="#2d6e5e"/>
+          <circle cx="38" cy="50" r="3.5" fill="#7851a9"/>
+          <!-- spray of point dots -->
+          <circle cx="66" cy="11" r="1.8" fill="#ec6813"/>
+          <circle cx="74" cy="7"  r="1.3" fill="#d4a017"/>
+          <circle cx="58" cy="9"  r="1.3" fill="#ec6813"/>
+          <circle cx="70" cy="17" r="1.0" fill="#ec6813" opacity="0.5"/>
         </svg>
         <span class="fig-tag">Fig. 1 — paint.ml</span>
       </div>
@@ -347,34 +456,56 @@
 
     <a class="demo-card" style="--r: 0.6deg;" href="gradient.html">
       <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none">
-          <circle cx="30" cy="25" r="18" fill="#ec6813" opacity="0.7"/>
-          <circle cx="55" cy="30" r="16" fill="#2d6e5e" opacity="0.65"/>
-          <circle cx="42" cy="42" r="14" fill="#7851a9" opacity="0.6"/>
-          <circle cx="70" cy="22" r="12" fill="#d4a017" opacity="0.55"/>
+        <svg viewBox="0 0 100 56" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="gblur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="6"/>
+            </filter>
+          </defs>
+          <rect width="100" height="56" fill="#f2ede0"/>
+          <circle cx="28" cy="24" r="22" fill="#ec6813" filter="url(#gblur)" opacity="0.9"/>
+          <circle cx="60" cy="30" r="19" fill="#2d6e5e" filter="url(#gblur)" opacity="0.85"/>
+          <circle cx="42" cy="44" r="17" fill="#7851a9" filter="url(#gblur)" opacity="0.8"/>
+          <circle cx="76" cy="18" r="14" fill="#d4a017" filter="url(#gblur)" opacity="0.78"/>
+          <!-- node dots -->
+          <circle cx="28" cy="24" r="1.8" fill="rgba(26,26,26,0.55)"/>
+          <circle cx="60" cy="30" r="1.8" fill="rgba(26,26,26,0.55)"/>
+          <circle cx="42" cy="44" r="1.8" fill="rgba(26,26,26,0.55)"/>
+          <circle cx="76" cy="18" r="1.8" fill="rgba(26,26,26,0.55)"/>
         </svg>
         <span class="fig-tag">Fig. 2 — gradient.ml</span>
       </div>
       <div class="demo-body">
         <div class="demo-num">Nº 2 · the mixer</div>
         <h3>Gradient Lab</h3>
-        <p>Place color nodes, drag to blend. Radial gradients with screen, multiply, and overlay compositing. Export as PNG.</p>
-        <div class="demo-meta"><span>gradient.js</span><span>radial blend · composite</span></div>
+        <p>Place color nodes, drag to blend. Inverse distance weighting mixes colors smoothly in real-time. Export as PNG.</p>
+        <div class="demo-meta"><span>gradient.ml</span><span>IDW · radial blend</span></div>
       </div>
     </a>
 
     <a class="demo-card" style="--r: -0.5deg;" href="tile.html">
       <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="0.5">
-          <defs><pattern id="tp" width="20" height="20" patternUnits="userSpaceOnUse">
-            <rect width="20" height="20" fill="#f2ede0"/>
-            <rect x="0" y="0" width="10" height="10" fill="#ec6813" opacity="0.6"/>
-            <rect x="10" y="10" width="10" height="10" fill="#2d6e5e" opacity="0.5"/>
-            <rect x="5" y="5" width="2" height="2" fill="#1a1a1a"/>
-            <rect x="15" y="15" width="2" height="2" fill="#1a1a1a"/>
-          </pattern></defs>
-          <rect x="5" y="5" width="90" height="50" fill="url(#tp)" stroke="#1a1a1a" stroke-width="1"/>
-          <rect x="25" y="10" width="20" height="20" fill="none" stroke="#ec6813" stroke-width="2" stroke-dasharray="2 2"/>
+        <svg viewBox="0 0 100 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="tp" width="18" height="18" patternUnits="userSpaceOnUse">
+              <rect width="18" height="18" fill="#f5f0e6"/>
+              <rect x="0" y="0" width="9" height="9" fill="#ec6813" opacity="0.78"/>
+              <rect x="9" y="9" width="9" height="9" fill="#2d6e5e" opacity="0.68"/>
+              <circle cx="9" cy="9" r="2.8" fill="#1a1a1a" opacity="0.65"/>
+            </pattern>
+          </defs>
+          <rect x="0" y="0" width="100" height="56" fill="url(#tp)"/>
+          <!-- editor window overlay -->
+          <rect x="28" y="9" width="26" height="26" fill="rgba(242,237,224,0.88)" stroke="#1a1a1a" stroke-width="1.5"/>
+          <!-- grid lines in editor -->
+          <line x1="28" y1="18" x2="54" y2="18" stroke="#1a1a1a" stroke-width="0.5" opacity="0.35"/>
+          <line x1="28" y1="26" x2="54" y2="26" stroke="#1a1a1a" stroke-width="0.5" opacity="0.35"/>
+          <line x1="36" y1="9"  x2="36" y2="35" stroke="#1a1a1a" stroke-width="0.5" opacity="0.35"/>
+          <line x1="44" y1="9"  x2="44" y2="35" stroke="#1a1a1a" stroke-width="0.5" opacity="0.35"/>
+          <!-- active painted cell -->
+          <rect x="36" y="18" width="8" height="8" fill="#ec6813"/>
+          <!-- selection ring -->
+          <rect x="28" y="9" width="26" height="26" fill="none" stroke="#ec6813" stroke-width="1.5" stroke-dasharray="2 2"/>
         </svg>
         <span class="fig-tag">Fig. 3 — tile.ml</span>
       </div>
@@ -382,7 +513,7 @@
         <div class="demo-num">Nº 3 · the pattern</div>
         <h3>Tile Maker</h3>
         <p>Design a repeating tile, watch it tessellate in real-time. Draw, fill, mirror with 4-way symmetry. Export the pattern.</p>
-        <div class="demo-meta"><span>tile.js</span><span>tessellation · symmetry</span></div>
+        <div class="demo-meta"><span>tile.ml</span><span>tessellation · symmetry</span></div>
       </div>
     </a>
   </div>

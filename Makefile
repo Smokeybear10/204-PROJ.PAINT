@@ -36,7 +36,7 @@ ZIPNAME := $(HWNAME)-submit($(ts)).zip
 
 .PHONY: all format clean zip
 
-all: paint.js gdemo.js lightbulb.js pairdemo.js widgetTest.native 
+all: paint.js gdemo.js lightbulb.js pairdemo.js widgetTest.native gradient.js tile.js
 
 paint.js: run_paint.byte
 	js_of_ocaml -o paint.js run_paint.byte
