@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gradient Lab — gradient.ml</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -30,6 +31,14 @@
   .mast-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; text-decoration: none; color: var(--ink); }
   .mast-title .dot { color: var(--orange); }
   .mast-issue { color: var(--ink-muted); font-family: 'Fraunces', serif; font-style: italic; font-size: 0.88rem; }
+  .back-btn {
+    align-self: flex-start;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--ink-muted); text-decoration: none; letter-spacing: 0.04em;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s ease;
+  }
+  .back-btn:hover { color: var(--orange); }
   main { flex: 1; padding: 3.5rem 2rem 4rem; display: flex; flex-direction: column; align-items: center; max-width: 1100px; margin: 0 auto; width: 100%; }
   .demo-kicker { font-family: 'Caveat', cursive; font-size: 1.3rem; color: var(--orange); transform: rotate(-1.5deg); display: inline-block; margin-bottom: 0.5rem; }
   h1 { font-family: 'Fraunces', serif; font-size: clamp(2.5rem, 6vw, 3.75rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.75rem; color: var(--ink); }
@@ -45,9 +54,9 @@
 <body>
 <header class="masthead">
   <a href="index.html" class="mast-title">PAINT<span class="dot">.</span>ML</a>
-  <span class="mast-issue">gradient.ml · the mixer</span>
 </header>
 <main>
+  <a href="index.html#demosWrap" class="back-btn">← all demos</a>
   <div class="demo-kicker">Nº 2 · the mixer</div>
   <h1>Gradient Lab</h1>
   <p class="subtitle">Place color nodes, drag to blend. Inverse distance weighting mixes colors smoothly in real-time. Right-click to remove, <kbd>Z</kbd> to undo.</p>
