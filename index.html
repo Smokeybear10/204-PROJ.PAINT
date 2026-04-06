@@ -191,6 +191,7 @@
 
   /* Demo cards with figure illustrations (from C) */
   .demos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+  .demos.demos-3 { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
   .demo-card {
     background: #ffffff;
     padding: 0;
@@ -277,6 +278,9 @@
   .splat.s2 { top: 40%; right: 8%; background: var(--teal); width: 30px; height: 30px; }
   .splat.s3 { bottom: 20%; left: 10%; background: var(--red); width: 25px; height: 25px; }
 
+  @media (max-width: 900px) {
+    .demos.demos-3 { grid-template-columns: 1fr; gap: 2rem; }
+  }
   @media (max-width: 780px) {
     .demos { grid-template-columns: 1fr; }
     .arch-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -320,9 +324,9 @@
 <section id="demos" class="section container">
   <div>
     <div class="section-label">what's inside</div>
-    <h2 class="section-title">Four demos, one runtime</h2>
+    <h2 class="section-title">Three demos, one runtime</h2>
   </div>
-  <div class="demos">
+  <div class="demos demos-3">
     <a class="demo-card" style="--r: -0.8deg;" href="paint.html">
       <div class="demo-art">
         <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round">
@@ -334,61 +338,51 @@
         <span class="fig-tag">Fig. 1 — paint.ml</span>
       </div>
       <div class="demo-body">
-        <div class="demo-num">Nº 1 · The main event</div>
+        <div class="demo-num">Nº 1 · the main event</div>
         <h3>Paint</h3>
-        <p>Full drawing app with line, point, and thick-line tools, a color picker, and undo/redo.</p>
-        <div class="demo-meta"><span>paint.ml</span><span>16.2 KB</span></div>
+        <p>Full drawing app — line, point, thick-line tools, color picker, undo/redo. Built on the OCaml widget runtime.</p>
+        <div class="demo-meta"><span>paint.ml</span><span>OCaml · jsoo</span></div>
       </div>
     </a>
 
-    <a class="demo-card" style="--r: 0.6deg;" href="gdemo.html">
+    <a class="demo-card" style="--r: 0.6deg;" href="gradient.html">
       <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="1.5">
-          <rect x="18" y="14" width="26" height="26" fill="#ec6813" stroke="none"/>
-          <circle cx="70" cy="30" r="16" stroke="#1a1a1a" fill="none"/>
-          <path d="M18 52 L82 52" stroke-width="2"/>
+        <svg viewBox="0 0 100 60" fill="none">
+          <circle cx="30" cy="25" r="18" fill="#ec6813" opacity="0.7"/>
+          <circle cx="55" cy="30" r="16" fill="#2d6e5e" opacity="0.65"/>
+          <circle cx="42" cy="42" r="14" fill="#7851a9" opacity="0.6"/>
+          <circle cx="70" cy="22" r="12" fill="#d4a017" opacity="0.55"/>
         </svg>
-        <span class="fig-tag">Fig. 2 — gdemo.ml</span>
+        <span class="fig-tag">Fig. 2 — gradient.ml</span>
       </div>
       <div class="demo-body">
-        <div class="demo-num">Nº 2 · The primitives</div>
-        <h3>Graphics Demo</h3>
-        <p>Primitives showcase — lines, rectangles, ellipses rendered through the graphics context.</p>
-        <div class="demo-meta"><span>gdemo.ml</span><span>1.5 KB</span></div>
+        <div class="demo-num">Nº 2 · the mixer</div>
+        <h3>Gradient Lab</h3>
+        <p>Place color nodes, drag to blend. Radial gradients with screen, multiply, and overlay compositing. Export as PNG.</p>
+        <div class="demo-meta"><span>gradient.js</span><span>radial blend · composite</span></div>
       </div>
     </a>
 
-    <a class="demo-card" style="--r: 0.9deg;" href="lightbulb.html">
+    <a class="demo-card" style="--r: -0.5deg;" href="tile.html">
       <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round">
-          <path d="M50 8 Q 34 8, 34 26 Q 34 38, 44 44 L44 50 L56 50 L56 44 Q 66 38, 66 26 Q 66 8, 50 8" fill="#ec6813" stroke="#1a1a1a"/>
-          <line x1="44" y1="53" x2="56" y2="53"/>
-          <line x1="46" y1="56" x2="54" y2="56"/>
+        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="0.5">
+          <defs><pattern id="tp" width="20" height="20" patternUnits="userSpaceOnUse">
+            <rect width="20" height="20" fill="#f2ede0"/>
+            <rect x="0" y="0" width="10" height="10" fill="#ec6813" opacity="0.6"/>
+            <rect x="10" y="10" width="10" height="10" fill="#2d6e5e" opacity="0.5"/>
+            <rect x="5" y="5" width="2" height="2" fill="#1a1a1a"/>
+            <rect x="15" y="15" width="2" height="2" fill="#1a1a1a"/>
+          </pattern></defs>
+          <rect x="5" y="5" width="90" height="50" fill="url(#tp)" stroke="#1a1a1a" stroke-width="1"/>
+          <rect x="25" y="10" width="20" height="20" fill="none" stroke="#ec6813" stroke-width="2" stroke-dasharray="2 2"/>
         </svg>
-        <span class="fig-tag">Fig. 3 — lightbulb.ml</span>
+        <span class="fig-tag">Fig. 3 — tile.ml</span>
       </div>
       <div class="demo-body">
-        <div class="demo-num">Nº 3 · The minimal</div>
-        <h3>Lightbulb</h3>
-        <p>Minimal widget state toggle. A single checkbox flips the bulb on and off.</p>
-        <div class="demo-meta"><span>lightbulb.ml</span><span>1.4 KB</span></div>
-      </div>
-    </a>
-
-    <a class="demo-card" style="--r: -0.5deg;" href="pairdemo.html">
-      <div class="demo-art">
-        <svg viewBox="0 0 100 60" fill="none" stroke="#1a1a1a" stroke-width="1.5">
-          <rect x="18" y="10" width="28" height="40"/>
-          <rect x="54" y="10" width="28" height="40" fill="#ec6813" stroke="#1a1a1a"/>
-          <line x1="48" y1="30" x2="52" y2="30" stroke-width="0.5"/>
-        </svg>
-        <span class="fig-tag">Fig. 4 — pairdemo.ml</span>
-      </div>
-      <div class="demo-body">
-        <div class="demo-num">Nº 4 · The composition</div>
-        <h3>Pair Demo</h3>
-        <p>Widget composition via pairing — stacked and side-by-side layouts.</p>
-        <div class="demo-meta"><span>pairdemo.ml</span><span>0.5 KB</span></div>
+        <div class="demo-num">Nº 3 · the pattern</div>
+        <h3>Tile Maker</h3>
+        <p>Design a repeating tile, watch it tessellate in real-time. Draw, fill, mirror with 4-way symmetry. Export the pattern.</p>
+        <div class="demo-meta"><span>tile.js</span><span>tessellation · symmetry</span></div>
       </div>
     </a>
   </div>

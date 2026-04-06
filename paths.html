@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pathfinding — paths.ml</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&family=Caveat:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f0e6;
+    --paper-dark: #ebe4d4;
+    --ink: #1a1a1a;
+    --ink-dim: #4a4a4a;
+    --ink-muted: #7a7570;
+    --orange: #ec6813;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(236, 104, 19, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(45, 110, 94, 0.03) 0%, transparent 40%),
+      repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(26, 26, 26, 0.015) 2px, rgba(26, 26, 26, 0.015) 3px);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .masthead { border-bottom: 2px solid var(--ink); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: baseline; font-size: 0.8rem; background: var(--paper); }
+  .mast-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; text-decoration: none; color: var(--ink); }
+  .mast-title .dot { color: var(--orange); }
+  .mast-issue { color: var(--ink-muted); font-family: 'Fraunces', serif; font-style: italic; font-size: 0.88rem; }
+  main { flex: 1; padding: 3.5rem 2rem 4rem; display: flex; flex-direction: column; align-items: center; max-width: 1100px; margin: 0 auto; width: 100%; }
+  .demo-kicker { font-family: 'Caveat', cursive; font-size: 1.3rem; color: var(--orange); transform: rotate(-1.5deg); display: inline-block; margin-bottom: 0.5rem; }
+  h1 { font-family: 'Fraunces', serif; font-size: clamp(2.5rem, 6vw, 3.75rem); font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.75rem; color: var(--ink); }
+  .subtitle { color: var(--ink-dim); font-size: 1.05rem; margin: 0 0 2.5rem; line-height: 1.55; max-width: 600px; text-align: center; }
+  .subtitle kbd { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: var(--paper-dark); border: 1.5px solid var(--ink); padding: 0.15em 0.45em; border-radius: 3px; color: var(--ink); box-shadow: 1.5px 1.5px 0 var(--ink); font-weight: 500; }
+  .canvas-frame { background: var(--paper); border: 2px solid var(--ink); border-radius: 4px; padding: 0; box-shadow: 8px 8px 0 var(--ink); transform: rotate(-0.3deg); position: relative; width: 100%; max-width: 1000px; }
+  .canvas-frame iframe { display: block; width: 100%; height: 640px; border: none; background: var(--paper); border-radius: 2px; }
+  .canvas-frame::after { content: 'paths.ml'; position: absolute; top: -0.8rem; right: 1rem; background: var(--orange); color: var(--paper); font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; padding: 0.2rem 0.6rem; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600; z-index: 2; }
+  footer { padding: 1.5rem 2rem; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--ink-muted); border-top: 1px solid rgba(26, 26, 26, 0.15); }
+  @media (max-width: 680px) {
+    .masthead { padding: 0.85rem 1.25rem; }
+    main { padding: 2.5rem 1rem 6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <a href="index.html" class="mast-title">PAINT<span class="dot">.</span>ML</a>
+  <span class="mast-issue">paths.ml · the search</span>
+</header>
+
+<main>
+  <div class="demo-kicker">Nº 3 · the search</div>
+  <h1>Pathfinding</h1>
+  <p class="subtitle">A*, Dijkstra, BFS, and Greedy Best-First search visualized on a 45×30 grid. Draw walls, generate a maze, watch the frontier expand. Hit <kbd>Space</kbd> to run, <kbd>R</kbd> to reset, <kbd>M</kbd> for a maze.</p>
+  <div class="canvas-frame">
+    <iframe src="paths-embed.html" title="paths.ml live demo" loading="eager"></iframe>
+  </div>
+</main>
+
+<footer>binary heap · recursive backtracker · vanilla JS</footer>
+
+</body>
+</html>

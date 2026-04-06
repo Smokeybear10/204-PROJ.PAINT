@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>fluid.ml — live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f0e6;
+    --paper-dark: #ebe4d4;
+    --ink: #1a1a1a;
+    --ink-dim: #4a4a4a;
+    --ink-muted: #7a7570;
+    --orange: #ec6813;
+    --teal: #2d6e5e;
+    --red: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    height: 100%;
+  }
+  .app { display: grid; grid-template-columns: 220px 1fr; height: 100vh; }
+  .sidebar {
+    border-right: 1.5px solid var(--ink);
+    padding: 1rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: var(--paper);
+    overflow-y: auto;
+  }
+  .section-label {
+    font-size: 0.62rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+  }
+  .control { display: flex; flex-direction: column; }
+  .row { display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; }
+  .row label { font-size: 0.7rem; color: var(--ink-dim); }
+  .row .val { font-size: 0.68rem; color: var(--ink); font-weight: 600; min-width: 28px; text-align: right; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--paper-dark);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    outline: none;
+    margin-top: 0.3rem;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    background: var(--orange);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: var(--orange);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .color-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.3rem; }
+  .color-swatch {
+    aspect-ratio: 1;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.12s ease;
+    position: relative;
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+  .color-swatch:hover { transform: translate(-0.5px, -0.5px); box-shadow: 1.5px 1.5px 0 var(--ink); }
+  .color-swatch.active::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1.5px dashed var(--ink);
+    border-radius: 5px;
+    pointer-events: none;
+  }
+  .btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 500;
+    padding: 0.45rem 0.4rem;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    box-shadow: 1.5px 1.5px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    transition: all 0.12s ease;
+  }
+  .btn:hover { background: var(--paper-dark); transform: translate(-0.5px, -0.5px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn:active { transform: translate(0.5px, 0.5px); box-shadow: 0.5px 0.5px 0 var(--ink); }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+  .btn.wide { grid-column: 1 / -1; }
+  .btn.primary { background: var(--ink); color: var(--paper); }
+  .btn.primary:hover { background: #000; }
+  .checkbox-row { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; user-select: none; }
+  .checkbox-row input { margin: 0; accent-color: var(--orange); }
+  .checkbox-row label { font-size: 0.7rem; color: var(--ink-dim); cursor: pointer; }
+
+  .canvas-wrap {
+    background:
+      repeating-linear-gradient(45deg, rgba(26,26,26,0.02) 0 1px, transparent 1px 12px),
+      var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    position: relative;
+  }
+  canvas {
+    display: block;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: crosshair;
+    max-width: 100%;
+    max-height: 100%;
+    touch-action: none;
+  }
+  .status-bar {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.65rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    gap: 0.7rem;
+  }
+  .status-bar .dot { color: var(--orange); }
+  .help {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    font-size: 0.6rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 3px;
+    box-shadow: 1.5px 1.5px 0 var(--ink);
+    color: var(--ink-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.03em;
+  }
+  .help kbd { background: var(--ink); color: var(--paper); padding: 0.05em 0.35em; border-radius: 2px; font-weight: 600; font-size: 0.95em; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="control">
+      <div class="section-label">Dye</div>
+      <div class="color-row" id="colors"></div>
+    </div>
+    <div class="control">
+      <div class="section-label">Physics</div>
+      <div class="row"><label>force</label><span class="val" id="forceVal">8</span></div>
+      <input type="range" id="force" min="2" max="40" value="8">
+      <div class="row" style="margin-top:0.4rem;"><label>viscosity</label><span class="val" id="viscVal">0.0</span></div>
+      <input type="range" id="visc" min="0" max="100" value="0">
+      <div class="row" style="margin-top:0.4rem;"><label>diffusion</label><span class="val" id="diffVal">0.0</span></div>
+      <input type="range" id="diff" min="0" max="100" value="0">
+      <div class="row" style="margin-top:0.4rem;"><label>fade</label><span class="val" id="fadeVal">0.995</span></div>
+      <input type="range" id="fade" min="950" max="1000" value="995">
+    </div>
+    <div class="control">
+      <div class="section-label">Render</div>
+      <label class="checkbox-row"><input type="checkbox" id="showVel"><label for="showVel">show velocity</label></label>
+    </div>
+    <div class="control">
+      <div class="section-label">Actions</div>
+      <div class="btns">
+        <button class="btn" id="clearBtn">CLEAR</button>
+        <button class="btn primary" id="sampleBtn">DEMO</button>
+      </div>
+    </div>
+    <div class="control" style="margin-top:auto;">
+      <div class="section-label">Stats</div>
+      <div class="row"><label>grid</label><span class="val" id="gridVal">576²</span></div>
+      <div class="row"><label>fps</label><span class="val" id="fpsVal">0</span></div>
+    </div>
+  </aside>
+  <div class="canvas-wrap">
+    <canvas id="c" width="576" height="576"></canvas>
+    <div class="status-bar"><span class="dot">●</span><span id="mode">drag to inject ink</span></div>
+    <div class="help">drag <kbd>LMB</kbd> · clear <kbd>C</kbd> · demo <kbd>D</kbd></div>
+  </div>
+</div>
+
+<script>
+// Stable fluids — Jos Stam, "Real-Time Fluid Dynamics for Games" (2003)
+const N = 576;
+const SIZE = (N + 2) * (N + 2);
+const IX = (i, j) => i + (N + 2) * j;
+
+// Buffers
+const u  = new Float32Array(SIZE);
+const v  = new Float32Array(SIZE);
+const u0 = new Float32Array(SIZE);
+const v0 = new Float32Array(SIZE);
+const rR = new Float32Array(SIZE), rG = new Float32Array(SIZE), rB = new Float32Array(SIZE);
+const rR0 = new Float32Array(SIZE), rG0 = new Float32Array(SIZE), rB0 = new Float32Array(SIZE);
+
+// Params
+let dt = 0.15;
+let diff = 0.0;
+let visc = 0.0;
+let force = 8;
+let fade = 0.992;
+let showVel = false;
+
+// Palette (paper-themed)
+const palette = [
+  { name: 'ink',    r: 26,  g: 26,  b: 26  },
+  { name: 'orange', r: 236, g: 104, b: 19  },
+  { name: 'teal',   r: 45,  g: 110, b: 94  },
+  { name: 'red',    r: 192, g: 57,  b: 43  },
+  { name: 'gold',   r: 212, g: 160, b: 23  },
+  { name: 'plum',   r: 120, g: 81,  b: 169 },
+];
+let activeColor = 0;
+
+// Stam's solver
+function addSource(x, s) { for (let i = 0; i < SIZE; i++) x[i] += dt * s[i]; }
+
+function setBnd(b, x) {
+  for (let i = 1; i <= N; i++) {
+    x[IX(0, i)]     = b === 1 ? -x[IX(1, i)] : x[IX(1, i)];
+    x[IX(N + 1, i)] = b === 1 ? -x[IX(N, i)] : x[IX(N, i)];
+    x[IX(i, 0)]     = b === 2 ? -x[IX(i, 1)] : x[IX(i, 1)];
+    x[IX(i, N + 1)] = b === 2 ? -x[IX(i, N)] : x[IX(i, N)];
+  }
+  x[IX(0, 0)]         = 0.5 * (x[IX(1, 0)]     + x[IX(0, 1)]);
+  x[IX(0, N + 1)]     = 0.5 * (x[IX(1, N + 1)] + x[IX(0, N)]);
+  x[IX(N + 1, 0)]     = 0.5 * (x[IX(N, 0)]     + x[IX(N + 1, 1)]);
+  x[IX(N + 1, N + 1)] = 0.5 * (x[IX(N, N + 1)] + x[IX(N + 1, N)]);
+}
+
+function linSolve(b, x, x0, a, c) {
+  const cRecip = 1 / c;
+  for (let k = 0; k < 4; k++) {
+    for (let j = 1; j <= N; j++) {
+      for (let i = 1; i <= N; i++) {
+        x[IX(i, j)] = (x0[IX(i, j)] + a * (x[IX(i - 1, j)] + x[IX(i + 1, j)] + x[IX(i, j - 1)] + x[IX(i, j + 1)])) * cRecip;
+      }
+    }
+    setBnd(b, x);
+  }
+}
+
+function diffuseStep(b, x, x0, d) {
+  if (d <= 0) { x.set(x0); return; }
+  const a = dt * d * N * N;
+  linSolve(b, x, x0, a, 1 + 4 * a);
+}
+
+function advect(b, d, d0, u, v) {
+  const dt0 = dt * N;
+  for (let j = 1; j <= N; j++) {
+    for (let i = 1; i <= N; i++) {
+      let x = i - dt0 * u[IX(i, j)];
+      let y = j - dt0 * v[IX(i, j)];
+      if (x < 0.5) x = 0.5; if (x > N + 0.5) x = N + 0.5;
+      if (y < 0.5) y = 0.5; if (y > N + 0.5) y = N + 0.5;
+      const i0 = x | 0, i1 = i0 + 1;
+      const j0 = y | 0, j1 = j0 + 1;
+      const s1 = x - i0, s0 = 1 - s1;
+      const t1 = y - j0, t0 = 1 - t1;
+      d[IX(i, j)] = s0 * (t0 * d0[IX(i0, j0)] + t1 * d0[IX(i0, j1)]) +
+                    s1 * (t0 * d0[IX(i1, j0)] + t1 * d0[IX(i1, j1)]);
+    }
+  }
+  setBnd(b, d);
+}
+
+function project(u, v, p, div) {
+  const h = 1 / N;
+  for (let j = 1; j <= N; j++) {
+    for (let i = 1; i <= N; i++) {
+      div[IX(i, j)] = -0.5 * h * (u[IX(i + 1, j)] - u[IX(i - 1, j)] + v[IX(i, j + 1)] - v[IX(i, j - 1)]);
+      p[IX(i, j)] = 0;
+    }
+  }
+  setBnd(0, div); setBnd(0, p);
+  linSolve(0, p, div, 1, 4);
+  for (let j = 1; j <= N; j++) {
+    for (let i = 1; i <= N; i++) {
+      u[IX(i, j)] -= 0.5 * (p[IX(i + 1, j)] - p[IX(i - 1, j)]) / h;
+      v[IX(i, j)] -= 0.5 * (p[IX(i, j + 1)] - p[IX(i, j - 1)]) / h;
+    }
+  }
+  setBnd(1, u); setBnd(2, v);
+}
+
+function densStep(x, x0, u, v, d) {
+  addSource(x, x0);
+  diffuseStep(0, x0, x, d);
+  advect(0, x, x0, u, v);
+}
+
+function velStep(u, v, u0, v0, visc) {
+  addSource(u, u0); addSource(v, v0);
+  diffuseStep(1, u0, u, visc);
+  diffuseStep(2, v0, v, visc);
+  project(u0, v0, u, v);
+  advect(1, u, u0, u0, v0);
+  advect(2, v, v0, u0, v0);
+  project(u, v, u0, v0);
+}
+
+// Canvas rendering — render at grid resolution, upscale with canvas smoothing
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const CW = canvas.width, CH = canvas.height;
+
+const offscreen = document.createElement('canvas');
+offscreen.width = N;
+offscreen.height = N;
+const octx = offscreen.getContext('2d');
+const nativeImg = octx.createImageData(N, N);
+
+function render() {
+  const data = nativeImg.data;
+  const pR = 245, pG = 240, pB = 230;
+  for (let j = 1; j <= N; j++) {
+    for (let i = 1; i <= N; i++) {
+      const r = rR[IX(i, j)];
+      const g = rG[IX(i, j)];
+      const b = rB[IX(i, j)];
+      const a = Math.min(1, (r + g + b) / 255);
+      const idx = ((j - 1) * N + (i - 1)) * 4;
+      data[idx]     = (pR * (1 - a) + r * a) | 0;
+      data[idx + 1] = (pG * (1 - a) + g * a) | 0;
+      data[idx + 2] = (pB * (1 - a) + b * a) | 0;
+      data[idx + 3] = 255;
+    }
+  }
+  octx.putImageData(nativeImg, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(offscreen, 0, 0, CW, CH);
+
+  if (showVel) {
+    const cellW = CW / N, cellH = CH / N;
+    ctx.strokeStyle = 'rgba(26,26,26,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const step = 4;
+    for (let j = 1; j <= N; j += step) {
+      for (let i = 1; i <= N; i += step) {
+        const x = (i - 0.5) * cellW;
+        const y = (j - 0.5) * cellH;
+        const vx = u[IX(i, j)] * cellW * 0.4;
+        const vy = v[IX(i, j)] * cellH * 0.4;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + vx, y + vy);
+      }
+    }
+    ctx.stroke();
+  }
+}
+
+// Input
+let dragging = false;
+let lastX = 0, lastY = 0;
+
+function clearSources() {
+  u0.fill(0); v0.fill(0); rR0.fill(0); rG0.fill(0); rB0.fill(0);
+}
+
+function injectAt(x, y, dx, dy) {
+  const i = Math.max(1, Math.min(N, 1 + Math.floor(x / (CW / N))));
+  const j = Math.max(1, Math.min(N, 1 + Math.floor(y / (CH / N))));
+  const col = palette[activeColor];
+  // spread over small kernel for smoother ink
+  for (let dj = -1; dj <= 1; dj++) {
+    for (let di = -1; di <= 1; di++) {
+      const ii = i + di, jj = j + dj;
+      if (ii < 1 || ii > N || jj < 1 || jj > N) continue;
+      const w = (di === 0 && dj === 0) ? 1.0 : 0.5;
+      rR0[IX(ii, jj)] += col.r * 40 * w;
+      rG0[IX(ii, jj)] += col.g * 40 * w;
+      rB0[IX(ii, jj)] += col.b * 40 * w;
+    }
+  }
+  u0[IX(i, j)] += dx * force;
+  v0[IX(i, j)] += dy * force;
+}
+
+canvas.addEventListener('pointerdown', e => {
+  dragging = true;
+  canvas.setPointerCapture(e.pointerId);
+  const rect = canvas.getBoundingClientRect();
+  lastX = (e.clientX - rect.left) * (CW / rect.width);
+  lastY = (e.clientY - rect.top) * (CH / rect.height);
+});
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (CW / rect.width);
+  const y = (e.clientY - rect.top) * (CH / rect.height);
+  const dx = (x - lastX) / CW;
+  const dy = (y - lastY) / CH;
+  injectAt(x, y, dx, dy);
+  lastX = x; lastY = y;
+});
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointercancel', () => { dragging = false; });
+
+// Loop
+let frameCount = 0, fpsTime = performance.now(), fps = 0;
+const fpsEl = document.getElementById('fpsVal');
+
+function step() {
+  velStep(u, v, u0, v0, visc);
+  densStep(rR, rR0, u, v, diff);
+  densStep(rG, rG0, u, v, diff);
+  densStep(rB, rB0, u, v, diff);
+  // Fade
+  for (let k = 0; k < SIZE; k++) {
+    rR[k] *= fade; rG[k] *= fade; rB[k] *= fade;
+    u[k] *= 0.999; v[k] *= 0.999;
+  }
+  clearSources();
+  render();
+
+  frameCount++;
+  const now = performance.now();
+  if (now - fpsTime >= 500) {
+    fps = Math.round(frameCount * 1000 / (now - fpsTime));
+    fpsEl.textContent = fps;
+    frameCount = 0; fpsTime = now;
+  }
+  requestAnimationFrame(step);
+}
+
+// Controls
+function buildPalette() {
+  const row = document.getElementById('colors');
+  palette.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'color-swatch' + (i === 0 ? ' active' : '');
+    el.style.background = `rgb(${c.r},${c.g},${c.b})`;
+    el.title = c.name;
+    el.onclick = () => {
+      activeColor = i;
+      row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    };
+    row.appendChild(el);
+  });
+}
+
+document.getElementById('force').oninput = e => {
+  force = +e.target.value;
+  document.getElementById('forceVal').textContent = force;
+};
+document.getElementById('visc').oninput = e => {
+  visc = +e.target.value / 100000;
+  document.getElementById('viscVal').textContent = visc.toFixed(5).slice(0,5);
+};
+document.getElementById('diff').oninput = e => {
+  diff = +e.target.value / 100000;
+  document.getElementById('diffVal').textContent = diff.toFixed(5).slice(0,5);
+};
+document.getElementById('fade').oninput = e => {
+  fade = +e.target.value / 1000;
+  document.getElementById('fadeVal').textContent = fade.toFixed(3);
+};
+document.getElementById('showVel').onchange = e => { showVel = e.target.checked; };
+document.getElementById('clearBtn').onclick = () => {
+  rR.fill(0); rG.fill(0); rB.fill(0); u.fill(0); v.fill(0);
+};
+document.getElementById('sampleBtn').onclick = () => runDemo();
+
+let demoInterval = null;
+function runDemo() {
+  if (demoInterval) { clearInterval(demoInterval); demoInterval = null; }
+  rR.fill(0); rG.fill(0); rB.fill(0); u.fill(0); v.fill(0);
+  let t = 0;
+  const originalColor = activeColor;
+  const seq = [1, 2, 3, 4, 5, 0];
+  demoInterval = setInterval(() => {
+    activeColor = seq[Math.floor(t / 8) % seq.length];
+    // two counter-rotating jets
+    const a = t * 0.18;
+    const cx1 = CW * (0.5 + 0.35 * Math.cos(a));
+    const cy1 = CH * (0.5 + 0.35 * Math.sin(a));
+    const dx1 = -0.03 * Math.sin(a);
+    const dy1 =  0.03 * Math.cos(a);
+    injectAt(cx1, cy1, dx1, dy1);
+
+    const b = -t * 0.18 + Math.PI;
+    const cx2 = CW * (0.5 + 0.25 * Math.cos(b));
+    const cy2 = CH * (0.5 + 0.25 * Math.sin(b));
+    const dx2 = -0.03 * Math.sin(b);
+    const dy2 =  0.03 * Math.cos(b);
+    injectAt(cx2, cy2, dx2, dy2);
+
+    t++;
+    if (t > 200) {
+      clearInterval(demoInterval);
+      demoInterval = null;
+      activeColor = originalColor;
+    }
+  }, 25);
+}
+
+// stop demo if user interacts
+canvas.addEventListener('pointerdown', () => {
+  if (demoInterval) { clearInterval(demoInterval); demoInterval = null; }
+});
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'c' || e.key === 'C') document.getElementById('clearBtn').click();
+  if (e.key === 'd' || e.key === 'D') document.getElementById('sampleBtn').click();
+});
+
+buildPalette();
+step();
+runDemo();
+</script>
+</body>
+</html>

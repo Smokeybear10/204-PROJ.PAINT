@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tile.ml — live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f5f0e6;
+    --paper-dark: #ebe4d4;
+    --ink: #1a1a1a;
+    --ink-dim: #4a4a4a;
+    --ink-muted: #7a7570;
+    --orange: #ec6813;
+    --teal: #2d6e5e;
+    --red: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100%; }
+  .app { display: grid; grid-template-columns: 180px 1fr; height: 100vh; }
+  .sidebar {
+    border-right: 1.5px solid var(--ink); padding: 0.9rem 0.7rem;
+    display: flex; flex-direction: column; gap: 0.8rem; background: var(--paper); overflow-y: auto;
+  }
+  .section-label { font-size: 0.58rem; color: var(--ink-muted); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 0.3rem; }
+  .tool-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem; }
+  .tool-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 500;
+    padding: 0.4rem 0.2rem; border: 1.5px solid var(--ink); background: var(--paper);
+    border-radius: 3px; cursor: pointer; text-align: center; color: var(--ink);
+    box-shadow: 1px 1px 0 var(--ink); transition: all 0.12s ease; text-transform: uppercase;
+  }
+  .tool-btn:hover { background: var(--paper-dark); }
+  .tool-btn.active { background: var(--ink); color: var(--paper); }
+  .color-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem; }
+  .color-swatch {
+    aspect-ratio: 1; border: 1.5px solid var(--ink); border-radius: 3px; cursor: pointer;
+    position: relative; box-shadow: 1px 1px 0 var(--ink);
+  }
+  .color-swatch.active::after { content: ''; position: absolute; inset: -3px; border: 1.5px dashed var(--ink); border-radius: 5px; pointer-events: none; }
+  .sym-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem; }
+  .sym-btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; font-weight: 500;
+    padding: 0.35rem 0.15rem; border: 1.5px solid var(--ink); background: var(--paper);
+    border-radius: 3px; cursor: pointer; text-align: center; color: var(--ink);
+    box-shadow: 1px 1px 0 var(--ink); text-transform: uppercase;
+  }
+  .sym-btn:hover { background: var(--paper-dark); }
+  .sym-btn.active { background: var(--ink); color: var(--paper); }
+  select {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; padding: 0.3rem;
+    border: 1.5px solid var(--ink); background: var(--paper); border-radius: 3px;
+    color: var(--ink); cursor: pointer; box-shadow: 1px 1px 0 var(--ink); width: 100%;
+  }
+  .btn {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 500;
+    padding: 0.35rem 0.3rem; border: 1.5px solid var(--ink); background: var(--paper);
+    border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink); box-shadow: 1.5px 1.5px 0 var(--ink); text-align: center;
+    transition: all 0.12s ease;
+  }
+  .btn:hover { background: var(--paper-dark); }
+  .btn:active { transform: translate(0.5px, 0.5px); box-shadow: 0.5px 0.5px 0 var(--ink); }
+  .btn.primary { background: var(--ink); color: var(--paper); }
+  .btn.primary:hover { background: #000; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; }
+
+  .canvas-wrap {
+    display: flex; align-items: center; justify-content: center; position: relative;
+    overflow: hidden;
+  }
+  canvas { display: block; touch-action: none; }
+  #preview { position: absolute; inset: 0; z-index: 0; image-rendering: pixelated; }
+  #editor {
+    position: relative; z-index: 1; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    cursor: crosshair; image-rendering: pixelated;
+  }
+  .status-bar {
+    position: absolute; bottom: 0.8rem; left: 0.8rem; background: var(--ink); color: var(--paper);
+    font-size: 0.6rem; padding: 0.25rem 0.55rem; border-radius: 3px; font-weight: 500;
+    letter-spacing: 0.05em; z-index: 2; display: flex; gap: 0.5rem;
+  }
+  .status-bar .dot { color: var(--orange); }
+  .help {
+    position: absolute; bottom: 0.8rem; right: 0.8rem; background: var(--paper);
+    border: 1.5px solid var(--ink); font-size: 0.55rem; padding: 0.25rem 0.5rem;
+    border-radius: 3px; box-shadow: 1.5px 1.5px 0 var(--ink); color: var(--ink-dim);
+    z-index: 2; letter-spacing: 0.03em;
+  }
+  .help kbd { background: var(--ink); color: var(--paper); padding: 0.05em 0.25em; border-radius: 2px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="control">
+      <div class="section-label">Tool</div>
+      <div class="tool-row">
+        <button class="tool-btn active" data-tool="draw">Draw</button>
+        <button class="tool-btn" data-tool="erase">Erase</button>
+        <button class="tool-btn" data-tool="fill">Fill</button>
+        <button class="tool-btn" data-tool="line">Line</button>
+      </div>
+    </div>
+    <div class="control">
+      <div class="section-label">Color</div>
+      <div class="color-row" id="colors"></div>
+    </div>
+    <div class="control">
+      <div class="section-label">Symmetry</div>
+      <div class="sym-row">
+        <button class="sym-btn active" data-sym="none">None</button>
+        <button class="sym-btn" data-sym="h">H Mirror</button>
+        <button class="sym-btn" data-sym="v">V Mirror</button>
+        <button class="sym-btn" data-sym="4way">4-Way</button>
+      </div>
+    </div>
+    <div class="control">
+      <div class="section-label">Tile Size</div>
+      <select id="tileSize">
+        <option value="8">8 × 8</option>
+        <option value="12">12 × 12</option>
+        <option value="16" selected>16 × 16</option>
+        <option value="24">24 × 24</option>
+      </select>
+    </div>
+    <div class="control">
+      <div class="section-label">Actions</div>
+      <div class="btns">
+        <button class="btn" id="clearBtn">Clear</button>
+        <button class="btn primary" id="randBtn">Random</button>
+        <button class="btn" id="undoBtn">Undo</button>
+        <button class="btn" id="exportBtn">PNG</button>
+      </div>
+    </div>
+  </aside>
+  <div class="canvas-wrap">
+    <canvas id="preview"></canvas>
+    <canvas id="editor"></canvas>
+    <div class="status-bar"><span class="dot">●</span><span id="mode">draw to tile</span></div>
+    <div class="help"><kbd>1-4</kbd> tools · <kbd>Z</kbd> undo · <kbd>C</kbd> clear · <kbd>R</kbd> random</div>
+  </div>
+</div>
+
+<script>
+const preview = document.getElementById('preview');
+const pctx = preview.getContext('2d');
+const editor = document.getElementById('editor');
+const ectx = editor.getContext('2d');
+
+const palette = [
+  {name:'paper',  hex:'#f5f0e6'},
+  {name:'ink',    hex:'#1a1a1a'},
+  {name:'orange', hex:'#ec6813'},
+  {name:'teal',   hex:'#2d6e5e'},
+  {name:'red',    hex:'#c0392b'},
+  {name:'gold',   hex:'#d4a017'},
+  {name:'plum',   hex:'#7851a9'},
+  {name:'sky',    hex:'#56a0d3'},
+  {name:'rose',   hex:'#d35e83'},
+  {name:'forest', hex:'#387c44'},
+  {name:'coral',  hex:'#eb8964'},
+  {name:'slate',  hex:'#6c757d'},
+];
+
+let tileSize = 16;
+let grid = new Array(tileSize * tileSize).fill(0); // 0 = transparent/paper
+let activeColor = 2; // orange
+let tool = 'draw';
+let symmetry = 'none';
+let history = [];
+let painting = false;
+let lineStart = null;
+
+const EDITOR_PX = 320; // editor canvas display size
+let cellPx = EDITOR_PX / tileSize;
+
+// Offscreen tile for tiling
+const tileBuf = document.createElement('canvas');
+const tctx = tileBuf.getContext('2d');
+
+function hexToRgb(hex) {
+  const v = parseInt(hex.slice(1), 16);
+  return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+
+function saveHistory() {
+  history.push([...grid]);
+  if (history.length > 50) history.shift();
+}
+
+function resize() {
+  cellPx = EDITOR_PX / tileSize;
+  editor.width = EDITOR_PX;
+  editor.height = EDITOR_PX;
+  editor.style.width = EDITOR_PX + 'px';
+  editor.style.height = EDITOR_PX + 'px';
+
+  const wrap = document.querySelector('.canvas-wrap');
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  preview.width = w;
+  preview.height = h;
+  preview.style.width = w + 'px';
+  preview.style.height = h + 'px';
+
+  tileBuf.width = tileSize;
+  tileBuf.height = tileSize;
+}
+
+function renderTileBuf() {
+  const img = tctx.createImageData(tileSize, tileSize);
+  const d = img.data;
+  for (let y = 0; y < tileSize; y++) {
+    for (let x = 0; x < tileSize; x++) {
+      const ci = grid[y * tileSize + x];
+      const [r, g, b] = hexToRgb(palette[ci].hex);
+      const idx = (y * tileSize + x) * 4;
+      d[idx] = r; d[idx+1] = g; d[idx+2] = b; d[idx+3] = 255;
+    }
+  }
+  tctx.putImageData(img, 0, 0);
+}
+
+function renderPreview() {
+  renderTileBuf();
+  pctx.imageSmoothingEnabled = false;
+  const scale = Math.max(4, Math.ceil(EDITOR_PX / tileSize));
+  const tw = tileSize * scale;
+  const th = tileSize * scale;
+  const pw = preview.width, ph = preview.height;
+  for (let y = -th; y < ph + th; y += th) {
+    for (let x = -tw; x < pw + tw; x += tw) {
+      pctx.drawImage(tileBuf, x, y, tw, th);
+    }
+  }
+}
+
+function renderEditor() {
+  ectx.imageSmoothingEnabled = false;
+  // Draw cells
+  for (let y = 0; y < tileSize; y++) {
+    for (let x = 0; x < tileSize; x++) {
+      const ci = grid[y * tileSize + x];
+      ectx.fillStyle = palette[ci].hex;
+      ectx.fillRect(x * cellPx, y * cellPx, cellPx, cellPx);
+    }
+  }
+  // Grid lines
+  ectx.strokeStyle = 'rgba(26,26,26,0.12)';
+  ectx.lineWidth = 0.5;
+  for (let i = 0; i <= tileSize; i++) {
+    ectx.beginPath();
+    ectx.moveTo(i * cellPx, 0); ectx.lineTo(i * cellPx, EDITOR_PX);
+    ectx.moveTo(0, i * cellPx); ectx.lineTo(EDITOR_PX, i * cellPx);
+    ectx.stroke();
+  }
+  // Border
+  ectx.strokeStyle = 'var(--ink)';
+  ectx.lineWidth = 1;
+  ectx.strokeRect(0, 0, EDITOR_PX, EDITOR_PX);
+}
+
+function render() {
+  renderPreview();
+  renderEditor();
+}
+
+function cellAt(e) {
+  const rect = editor.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / (rect.width / tileSize));
+  const y = Math.floor((e.clientY - rect.top) / (rect.height / tileSize));
+  return { x: Math.max(0, Math.min(tileSize - 1, x)), y: Math.max(0, Math.min(tileSize - 1, y)) };
+}
+
+function setPixel(x, y, ci) {
+  if (x < 0 || x >= tileSize || y < 0 || y >= tileSize) return;
+  grid[y * tileSize + x] = ci;
+}
+
+function applySymmetry(x, y, ci) {
+  setPixel(x, y, ci);
+  if (symmetry === 'h' || symmetry === '4way') setPixel(tileSize - 1 - x, y, ci);
+  if (symmetry === 'v' || symmetry === '4way') setPixel(x, tileSize - 1 - y, ci);
+  if (symmetry === '4way') setPixel(tileSize - 1 - x, tileSize - 1 - y, ci);
+}
+
+function floodFill(sx, sy, newCi) {
+  const oldCi = grid[sy * tileSize + sx];
+  if (oldCi === newCi) return;
+  const stack = [[sx, sy]];
+  const visited = new Uint8Array(tileSize * tileSize);
+  while (stack.length) {
+    const [x, y] = stack.pop();
+    if (x < 0 || x >= tileSize || y < 0 || y >= tileSize) continue;
+    const idx = y * tileSize + x;
+    if (visited[idx] || grid[idx] !== oldCi) continue;
+    visited[idx] = 1;
+    grid[idx] = newCi;
+    stack.push([x-1,y],[x+1,y],[x,y-1],[x,y+1]);
+  }
+}
+
+function drawLine(x0, y0, x1, y1, ci) {
+  const dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  while (true) {
+    applySymmetry(x0, y0, ci);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 < dx) { err += dx; y0 += sy; }
+  }
+}
+
+editor.addEventListener('pointerdown', e => {
+  const { x, y } = cellAt(e);
+  editor.setPointerCapture(e.pointerId);
+  painting = true;
+
+  if (tool === 'fill') {
+    saveHistory();
+    floodFill(x, y, activeColor);
+    render();
+    return;
+  }
+  if (tool === 'line') {
+    lineStart = { x, y };
+    return;
+  }
+
+  saveHistory();
+  const ci = tool === 'erase' ? 0 : activeColor;
+  applySymmetry(x, y, ci);
+  render();
+});
+
+editor.addEventListener('pointermove', e => {
+  if (!painting) return;
+  const { x, y } = cellAt(e);
+  if (tool === 'draw' || tool === 'erase') {
+    const ci = tool === 'erase' ? 0 : activeColor;
+    applySymmetry(x, y, ci);
+    render();
+  }
+});
+
+editor.addEventListener('pointerup', e => {
+  if (!painting) return;
+  painting = false;
+  if (tool === 'line' && lineStart) {
+    const { x, y } = cellAt(e);
+    saveHistory();
+    drawLine(lineStart.x, lineStart.y, x, y, activeColor);
+    lineStart = null;
+    render();
+  }
+});
+
+// Tool buttons
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.onclick = () => {
+    tool = btn.dataset.tool;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
+
+// Symmetry buttons
+document.querySelectorAll('.sym-btn').forEach(btn => {
+  btn.onclick = () => {
+    symmetry = btn.dataset.sym;
+    document.querySelectorAll('.sym-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  };
+});
+
+// Color palette
+function buildPalette() {
+  const row = document.getElementById('colors');
+  row.innerHTML = '';
+  palette.forEach((c, i) => {
+    const el = document.createElement('div');
+    el.className = 'color-swatch' + (i === activeColor ? ' active' : '');
+    el.style.background = c.hex;
+    el.title = c.name;
+    el.onclick = () => {
+      activeColor = i;
+      row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    };
+    row.appendChild(el);
+  });
+}
+
+// Tile size
+document.getElementById('tileSize').onchange = e => {
+  saveHistory();
+  const newSize = +e.target.value;
+  const newGrid = new Array(newSize * newSize).fill(0);
+  // Copy over what fits
+  const minS = Math.min(tileSize, newSize);
+  for (let y = 0; y < minS; y++)
+    for (let x = 0; x < minS; x++)
+      newGrid[y * newSize + x] = grid[y * tileSize + x];
+  tileSize = newSize;
+  grid = newGrid;
+  resize();
+  render();
+};
+
+// Actions
+document.getElementById('clearBtn').onclick = () => {
+  saveHistory();
+  grid.fill(0);
+  render();
+};
+
+document.getElementById('undoBtn').onclick = undo;
+
+document.getElementById('randBtn').onclick = () => {
+  saveHistory();
+  const usedColors = [0, 1, 2, 3].map(() => Math.floor(Math.random() * palette.length));
+  for (let i = 0; i < grid.length; i++) {
+    grid[i] = Math.random() < 0.35 ? usedColors[Math.floor(Math.random() * usedColors.length)] : 0;
+  }
+  // Apply symmetry to make it look designed
+  if (symmetry === 'h' || symmetry === '4way') {
+    for (let y = 0; y < tileSize; y++)
+      for (let x = 0; x < Math.ceil(tileSize / 2); x++)
+        grid[y * tileSize + (tileSize - 1 - x)] = grid[y * tileSize + x];
+  }
+  if (symmetry === 'v' || symmetry === '4way') {
+    for (let y = 0; y < Math.ceil(tileSize / 2); y++)
+      for (let x = 0; x < tileSize; x++)
+        grid[(tileSize - 1 - y) * tileSize + x] = grid[y * tileSize + x];
+  }
+  render();
+};
+
+document.getElementById('exportBtn').onclick = () => {
+  renderTileBuf();
+  const exp = document.createElement('canvas');
+  exp.width = tileSize * 8; exp.height = tileSize * 8;
+  const xctx = exp.getContext('2d');
+  xctx.imageSmoothingEnabled = false;
+  // Export the tiled version
+  const tw = tileSize * 8 / 4;
+  for (let y = 0; y < 4; y++)
+    for (let x = 0; x < 4; x++)
+      xctx.drawImage(tileBuf, x * tw, y * tw, tw, tw);
+  const link = document.createElement('a');
+  link.download = 'tile.png';
+  link.href = exp.toDataURL('image/png');
+  link.click();
+};
+
+function undo() {
+  if (!history.length) return;
+  const prev = history.pop();
+  // History might be from a different tile size
+  if (prev.length === grid.length) {
+    grid = prev;
+  }
+  render();
+}
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'z' || e.key === 'Z') undo();
+  if (e.key === 'c' || e.key === 'C') { saveHistory(); grid.fill(0); render(); }
+  if (e.key === 'r' || e.key === 'R') document.getElementById('randBtn').click();
+  if (e.key === '1') document.querySelector('[data-tool="draw"]').click();
+  if (e.key === '2') document.querySelector('[data-tool="erase"]').click();
+  if (e.key === '3') document.querySelector('[data-tool="fill"]').click();
+  if (e.key === '4') document.querySelector('[data-tool="line"]').click();
+});
+
+window.addEventListener('resize', () => { resize(); render(); });
+
+function initDemo() {
+  // Draw a simple starter pattern
+  const mid = Math.floor(tileSize / 2);
+  for (let i = 0; i < tileSize; i++) {
+    grid[i * tileSize + mid] = 2; // orange vertical line
+    grid[mid * tileSize + i] = 2; // orange horizontal line
+  }
+  // Corner dots
+  grid[2 * tileSize + 2] = 3; // teal
+  grid[2 * tileSize + (tileSize - 3)] = 4; // red
+  grid[(tileSize - 3) * tileSize + 2] = 5; // gold
+  grid[(tileSize - 3) * tileSize + (tileSize - 3)] = 6; // plum
+  // Center
+  grid[mid * tileSize + mid] = 1; // ink
+}
+
+buildPalette();
+resize();
+initDemo();
+render();
+</script>
+</body>
+</html>
