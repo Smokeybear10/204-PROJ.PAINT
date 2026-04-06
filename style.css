@@ -97,7 +97,7 @@ body::after {
 .hero {
   position: sticky; top: 0; height: 100vh;
   display: flex; align-items: center; justify-content: center;
-  overflow: clip; padding: 0 0 2rem; text-align: center;
+  overflow: visible; padding: 0 0 2rem; text-align: center;
 }
 .hero > .container { width: 100%; }
 
